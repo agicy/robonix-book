@@ -115,6 +115,16 @@ test -n "${VLM_API_KEY:-}" && echo 'VLM_API_KEY is set'
 printf 'VLM_BASE_URL=%s\nVLM_MODEL=%s\n' "$VLM_BASE_URL" "$VLM_MODEL"
 ```
 
+### 自建 vLLM 服务端的推荐参数
+
+如果 VLM 由自建 vLLM 提供，建议加上：
+
+```bash
+vllm serve <your-model> --structured-outputs-config.disable-any-whitespace True
+```
+
+Pilot 要求模型输出 JSON 对象，而 vLLM 默认允许生成任意空白（该选项默认 `False`）。模型越小越容易把 JSON 的每个字段单独换行，实测出现过 1987 个字符消耗 1800 token（约 1.1 字符/token）的情况——生成还没结束就撞上 `max_tokens`，整轮响应作废。开启后输出变紧凑，这类截断明显减少。
+
 ## 4. 构建 Webots 部署
 
 从 Robonix 仓库根目录进入示例：
